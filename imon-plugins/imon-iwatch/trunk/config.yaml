@@ -1,0 +1,11 @@
+# $Id: config.yaml 6673 2012-04-05 11:05:10Z shanker.balan $
+
+package: imon-iwatch
+version: 0.1.0
+arch: all
+maintainer: Platform-Pe <platform-pe@inmobi.com>
+description: SNMP Watcher for Net-SNMP agents
+section: ops
+depends: imon
+
+# vim: set ts=2 sw=2 expandtab:

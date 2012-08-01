@@ -1,0 +1,7 @@
+package: imon-utils-poe
+version: 0.1.0
+arch: all
+maintainer: Rengith Jerome <rengith.j@inmobi.com>
+description: poe utilities for iMon
+section: ops
+predepends: libpoe-perl

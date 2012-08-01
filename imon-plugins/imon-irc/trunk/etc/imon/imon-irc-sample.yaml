@@ -1,0 +1,29 @@
+# $Id: imon-irc-sample.yaml 5351 2012-02-16 08:26:41Z rengith.j $
+
+transport:
+  - name: tConnector
+    module: ImonConnector
+    addr: 224.1.1.11
+    port: 10006
+    event_type: "IRC::Event"
+
+sender:
+  - name: IRC
+    module: IRC
+    transport: 
+      - tConnector
+    irc_settings:   # See Net::IRC
+        Server: irc.corp.inmobi.com
+        Port: 6667
+        Nick: pagerbot
+        Username: iMon Pager Bot
+        Ircname: "IMon Pager Bot"
+    channel: '#oncall-test'
+    #retries: 3 # retries defautls to 3
+    # See IRC.pm for a list of valid colors
+    colors:
+        #error: TEAL
+        warn: BLUE
+        crit: RED
+
+# vim: set sw=2 ts=4 expandtab:

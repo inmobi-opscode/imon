@@ -1,0 +1,11 @@
+# $Id: config.yaml 5751 2012-03-07 12:10:41Z rengith.j $
+
+package: imon-snmp
+version: 0.2.0
+arch: all
+maintainer: Platform-Pe <platform-pe@inmobi.com>
+description: SNMP Collector modules for imon
+section: ops
+depends: imon, libsnmp-info-perl, inmobi-mibs, imon-utils-poe
+
+# vim: set ts=2 sw=2 expandtab:

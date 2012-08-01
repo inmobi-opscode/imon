@@ -1,0 +1,121 @@
+# imon-sample.yaml:  imon sample configuration file
+#
+# transport:
+#
+# Transports modules are used by collectors and processors to send and receive
+# data.
+# collector-module -> t1 -> processor-module -> t2 -> sender-module -> [..]
+#
+# Transport Options:
+#
+# - InMemory: In memory queue. Used as an interface between modules
+# - ImonConnector: LWES module for sending/receiving events over network
+# - LwesEmitter: LWES emitter module. Used to sending aggregated events to
+#   another iMon instance over UDP Unicast or Multicast
+# - REDIS: Writes to a redis instance
+
+transport:
+  # collector to processor transport(s)
+  - name: tAgg
+    module: InMemory
+  # name: tTag
+  # module: InMemory
+  - name: tDump
+    module: InMemory
+  - name: tDump2
+    module: InMemory
+  # processor to sender transport(s)
+  - name: tRRD
+    module: InMemory
+
+# collector:
+#
+# Collectors collect events from the network. You can have as many colectors as
+# you need but its cleaner to have one imon instance have one collector.
+
+collector:
+  - name: Bwmeasure
+    module: Bwmeasure
+    dc_config:
+     - datacenter1:
+         monmachine: monmachine1
+         bandwidth_max: 20 # in Meg
+         datasize_min: 1 # in Meg
+         datasize_step: 4 # in Meg
+     - datacenter2:
+         monmachine: samit-laptop
+         bandwidth_max: 20 # in Meg
+         datasize_min: 1 # in Meg
+         datasize_step: 4 # in Meg
+     - datacenter3:
+         monmachine: monmachine3
+         bandwidth_max: 20 # in Meg
+         datasize_min: 1 # in Meg
+         datasize_step: 4 # in Meg
+     - datacenter4:
+         monmachine: monmachine4
+         bandwidth_max: 20 # in Meg
+         datasize_min: 1 # in Meg
+         datasize_step: 4 # in Meg
+    poll_interval: 10
+    protocol: tcp
+    port: 5001
+    #iperf_raw_args: 
+    timeout: 100
+    transport:
+      - tAgg
+      - tDump
+    env: test
+    
+# processor:
+#
+# Procesors pick up events from transport(s). The processing rules (tagiing,
+# aggregation, etc) and applied and the results are pushed to another
+# transport(s)
+
+processor:
+ - name: Aggregator
+   module: Aggregator
+   transport:
+     in:
+       - tAgg
+     out:
+       - tRRD
+       - tDump2
+   interval: 10
+   default_pivot: Hostname
+   pivot:
+     bandwidth:
+       - sourcedc
+       - sinkdc
+   rules:
+     bandwidth:
+       cf:
+         - Avg
+         - Min
+         - Max
+ 
+sender:
+ - name: RRD
+   module: RRD
+   transport: 
+     - tRRD
+   datadir: '/var/lib/imon/rrd'
+   ds_type:
+     bandwidth: GAUGE
+   step: 10
+   hb: 600
+   rras:
+     - 'RRA:AVERAGE:0.5:1:44640'
+  # map:
+
+ - name: Dump
+   module: Dump
+   transport:
+     - tDump2
+
+Contacts:
+  contact_group1: 
+    - 'samit.pal@inmobi.com'
+      
+# vim: set sw=2 ts=4 expandtab:

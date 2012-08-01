@@ -1,0 +1,7 @@
+package: imon-pager
+version: 0.1.0
+arch: all
+maintainer: Rengith Jerome <rengith.j@inmobi.com>
+description: Pager sender module for iMon
+section: ops
+predepends: imon, libpoe-perl, libcrypt-ssleay-perl, libjson-perl, libio-socket-ssl-perl

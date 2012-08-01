@@ -1,0 +1,142 @@
+#!/usr/bin/perl
+#
+# $Id: imon 4940 2012-01-27 13:23:01Z rengith.j $
+
+=head1 NAME
+ 
+ imon: event collection, processing, monitoring and alerting Framework
+
+=head1 VERSION
+
+ version 0.1.0
+
+=head1 SYNOPSIS
+
+ usage:
+    imon [params]
+
+  where params are:
+    
+    -c|--cfgfile      Config file which has info about collector, transport, processor and sender
+        
+    -h|--help          Print this help text
+
+  For sample configuration, refer /etc/imon/imon-sample.yaml
+
+=head1 AUTHOR
+
+ Rengith Jerome <rengith.j@inmobi.com>
+=cut
+use strict;
+use warnings;
+use YAML::Syck;
+use Getopt::Long;
+use Pod::Usage;
+use threads;
+
+# commandline options Getoptions
+my ($cfg, $cfgfile, $help);
+GetOptions(
+    'cfgfile=s'        => \$cfgfile,
+    'help'             => \$help
+);
+
+pod2usage( -exitval => 0 ) if $help;
+
+if ( !defined $cfgfile ) {
+    pod2usage(
+        -exitval => 1,
+        -message => "Need --cfgfile|-c option (sample config can be found at /etc/imon/imon-sample.yaml)"
+    );
+}
+
+# Reading configuration
+eval { $cfg = LoadFile($cfgfile); };
+ 
+die "Unable to read Config file: Error $@" if $@;
+my $transports = {};
+my $objects = {};
+
+print "Initializing IMon Collector, Processor and Sender modules with corresponding Transport\n";
+
+$SIG{'TERM'} = sub {
+    print "\nReceived TERM signal, exiting\n";
+    exit;
+};
+# create transport object, populate in $transports hash
+foreach my $t(@{$cfg->{transport}}) {
+    my ($m, $n, $class, $obj);
+    $m = $t->{module};
+    $n = $t->{name};
+    die "Missing name and/or module parameter in transport section" if (!$m || !$n);
+
+    $class = "IMON::Transport::${m}";
+    eval { require "IMON/Transport/$m\.pm"; };
+    die "Error loading module: $@" if ($@);
+    $obj = $class->new(cfg => $t); 
+    if (my $err = $obj->error()){
+        die "Error initializing Transport module '$m': $err";
+    }
+    $transports->{$n} = $obj;
+}
+
+# creating the collector/processor/sender objects with corresponding transport
+foreach my $section( qw(collector processor sender) ) {
+    my $dir = ucfirst($section); # collector to Collector..
+    foreach my $mycfg(@{$cfg->{$section}}) {
+        my ($module, $name, $class, $obj, $t);
+        $module = $mycfg->{module};
+        $name   = $mycfg->{name};
+        $t      = $mycfg->{transport};
+
+        if (!$module || !$name || !$t) {
+            die "Missing parameters: name, module and transport are mandatory parameters for $section section";
+        }
+        $class  = "IMON::${dir}::${module}";
+        $module =~ s/::/\//g;
+        eval { require "IMON/${dir}/${module}\.pm"; };
+        die "Error loading module: $@" if ($@);
+
+        $obj = $class->new(cfg => $mycfg); 
+        if (my $err = $obj->error()){
+            die "Error initializing $section module '$module\.pm': $err";
+        }
+        # processor will have in as well as out transport
+        if ($section eq 'processor') {
+            my @t_in = (ref($t->{in}) eq 'ARRAY') ? map { $transports->{$_} } @{$t->{in}} : ($transports->{$t->{in}});
+            my @t_out = (ref($t->{out}) eq 'ARRAY') ? map { $transports->{$_} } @{$t->{out}} : ($transports->{$t->{out}});
+            $obj->add_transport(in => \@t_in, out => \@t_out);
+        }else {
+            my @ts = (ref($t) eq 'ARRAY') ? map { $transports->{$_} } @{$t} : ($transports->{$t});
+            $obj->add_transport(\@ts);
+        }
+        $objects->{$section}->{$name} = $obj;
+    }
+}
+
+my @threads;
+# creating separate threads for collect, process and send_data calls
+foreach my $s(keys %{$objects->{collector}}) {
+    my $obj = $objects->{collector}->{$s};
+    push @threads, threads->create(sub { $obj->collect() });
+}
+
+my @alrm_threads;
+foreach my $s(keys %{$objects->{processor}}) {
+    my $obj = $objects->{processor}->{$s};
+    push @threads, threads->create(sub { $obj->process() });
+}
+
+foreach my $s(keys %{$objects->{sender}}) {
+    my $obj = $objects->{sender}->{$s};
+    push @threads, threads->create(sub { $obj->send_data() });
+}
+
+$_->detach() foreach(@threads); # detach threads
+
+# sleep if all the threads are in running state
+while ((grep { $_->is_running() } @threads) == @threads) {
+    sleep 1;
+}
+
+# vim: set sw=2 ts=4 expandtab:

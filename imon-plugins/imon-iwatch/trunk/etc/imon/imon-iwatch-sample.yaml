@@ -1,0 +1,36 @@
+#
+# $Id: imon-iwatch-sample.yaml 7056 2012-04-13 10:34:55Z shanker.balan $
+#
+# Sample IMON config for IWatch collector
+#
+
+transport:
+  - name: tDump
+    module: InMemory
+
+collector:
+  - name: IWatch
+    module: SNMP::IWatch
+    source: IWatch
+    event_type: IWatch
+    transport:
+      - tDump
+    env: iwatch
+    interval: 180
+    default:
+      snmp_options:
+        Community: WygDubacs7
+        Port: 161
+        Version: 2
+        MibDirs:
+          - /usr/share/snmp/mibs
+    devices:
+      irc.corp.inmobi.com:
+
+sender:
+  - name: Dump
+    module: Dump
+    transport:
+      - tDump
+
+# vim: set sw=2 ts=2 expandtab:

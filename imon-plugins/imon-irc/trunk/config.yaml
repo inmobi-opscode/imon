@@ -1,0 +1,11 @@
+# $Id: config.yaml 4956 2012-01-30 14:46:08Z twikiuser $
+
+package: imon-irc
+version: 0.1.0
+arch: all
+maintainer: Platform-Pe <platform-pe@inmobi.com>
+description: IRC modules for imon
+section: ops
+depends: imon, libnet-irc-perl
+
+# vim: set ts=2 sw=2 expandtab:

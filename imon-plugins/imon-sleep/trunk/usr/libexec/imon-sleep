@@ -1,0 +1,165 @@
+#!/usr/bin/perl
+#
+# $Id: imon-sleep 7774 2012-05-04 07:10:14Z rengith.j $
+
+=head1 NAME
+
+ imon-sleep - CLI for querying/updating iMon alerts sleep information
+
+=head1 SYNOPSIS
+
+ imon-sleep [options] [params]
+
+ where options are:
+  --m|module     Sleeper module name (Defaults to 'FileWatcher')
+  --h|help       print this help text
+
+ params is list of parameters used to get/set the sleep information, which are positional parameters
+ in <host> <source> <tag> format (along with sleep interval as last param in case of updating sleep)
+ see EXAMPLE session (perldoc imon-sleep) for examples
+
+ If no params specified, it will list status of all the sleeping entries
+
+=head1 EXAMPLE
+
+=over 4
+
+=item get sleep information
+
+ # status of all sleeping entries (run withour any parameters)
+ $ imon-sleep
+
+ # details of host myhost.corp.inmobi.com
+ $ imon-sleep myhost.corp.inmobi.com
+
+ # details of source FPING on host myhost.corp.inmobi.com
+ $ imon-sleep myhost.corp.inmobi.com FPING
+
+ # details of a specific tag(crit-loss) on source/host(myhost.corp.inmobi.com/FPING)
+ $ imon-sleep myhost.corp.inmobi.com FPING crit-loss
+
+=item set/update sleep ( need to run as *root* )
+ 
+ For setting sleep, the last paramater will be the sleep interval in seconds.
+
+ # sleep host myhost.corp.inmobi.com for 300(s)
+ $ imon-sleep myhost.corp.inmobi.com 300
+ 
+ # sleep Source FPING on host myhost.corp.inmobi.com for an hour
+ $ imon-sleep myhost.corp.inmobi.com FPING 3600
+
+ # sleep tag crit-loss on Host/Source myhost.corp.inmobi.com/FPING for an hour
+ $ imon-sleep myhost.corp.inmobi.com FPING crit-loss 3600
+
+=back 
+
+=head1 CAVEAT
+
+ imon-sleep CLI need to run on the machines where the iMon alerting Sender is running
+
+=head1 AUTHOR
+
+ Rengith Jerome <rengith.j@inmobi.com>
+=cut
+
+use strict;
+use warnings;
+
+use Getopt::Long;
+use Pod::Usage;
+use File::Find;
+
+use constant DEFAULT_SLEEP_MODULE => 'FileWatcher';
+
+my ( $module, $help, $sleeper );
+
+GetOptions(
+    'module=s'  => \$module,
+    'help'      => \$help
+);
+
+pod2usage( -exitval => 0 ) if $help;
+
+$module ||= DEFAULT_SLEEP_MODULE;
+$sleeper = &init_sleeper($module);
+
+if (@ARGV) {
+    if ($ARGV[-1] =~ /^\d+$/ && @ARGV > 1) {
+        if (getpwuid($<) ne 'root') {
+            die "setting sleep requires to run as root";
+        }
+        &set_sleep(@ARGV);
+    }else {
+        &get_details(@ARGV);
+    }
+}else {
+    &list_all();
+}
+
+# list status of all sleeping entries
+sub list_all {
+
+    my $data = {};
+    my $basedir = $sleeper->{basedir};
+    find( { wanted => sub {
+                if( -f $_ && (my ($path) = $_ =~ /^$basedir\/?(.+)\.sleep$/) ) {
+                    if (my $d = $sleeper->sleep_details($path)) {
+                        $data->{$path} = $d; 
+                    }
+                }
+            },
+            no_chdir => 1
+          },
+          $basedir
+    );
+    foreach (sort keys %{$data}) {
+        my $d  = $data->{$_}->{duration};
+        my $r = $data->{$_}->{remaining};
+        printf("%-40s : sleeping for %d(s), %d(s) remaining\n", $_,$d,$r); 
+    }
+}
+
+sub set_sleep {
+    my $sleep = pop(@_);
+    my $path = join('/', @_);
+    
+    if(my $msg = $sleeper->set_sleep($path, $sleep)) {
+        print "$msg\n";
+    }else {
+        my $err = $sleeper->error->();
+        print "$err\n";
+    }
+}
+
+sub get_details {
+    my ($host, $src, $tag, @paths);
+
+    ($host, $src, $tag) = @_;
+    push @paths, $host if ($host);
+    push @paths, "$host/$src" if ($host && $src);
+    push @paths, "$host/$src/$tag" if ($host && $src && $tag);
+
+    foreach my $path(@paths) {
+        #  get sleep_details for the path
+        if (my $d = $sleeper->sleep_details($path)) {
+            print "@_ is sleeping for " . $d->{duration} . "(s), " . $d->{remaining} . "(s) remaining\n";
+            exit;
+        }elsif(my $err = $sleeper->error()) {
+            die "Error: $err\n";
+        }
+    }
+    print "'@_' not under sleep\n";
+}
+
+sub init_sleeper {
+    my $module = shift;
+
+    my $m = $module = "IMON::Sender::Sleep::$module";
+    $m =~ s/::/\//g;
+    eval { require "$m\.pm" };
+    die "Error loading module $m\.pm $@" if ($@);
+
+    return $module->new();
+}
+
+# vim: set sw=2 ts=4 expandtab:

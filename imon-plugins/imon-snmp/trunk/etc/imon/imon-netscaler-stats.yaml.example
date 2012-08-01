@@ -1,0 +1,1478 @@
+# $Id: imon-netscaler-stats.yaml.example 5353 2012-02-16 09:03:48Z twikiuser $
+
+transport:
+  - name: tAgg
+    module: InMemory
+  - name: tTag
+    module: InMemory
+  - name: tSysLog
+    module: InMemory
+  - name: tEmail
+    module: InMemory
+  - name: tRRD
+    module: InMemory
+  - name: tDump
+    module: InMemory
+  - name: tConnector
+    module: ImonConnector
+    addr: 224.1.1.11
+    port: 10006
+    event_type: "IRC::Event"
+
+collector:
+  - name: SNMP::Netscaler
+    module: SNMP::Netscaler
+    default:
+      snmp_options:
+        Community: ua2-navisite-inmobi
+        Port: 161
+        Version: 2
+        MibDirs:
+          - /usr/share/snmp/mibs
+          - /usr/share/snmp/mibs/netscaler
+      interval: 60
+    event_type: SNMP::Netscaler
+    devices:
+      lb1-1.ua2.inmobi.com:
+    transport:
+      - tTag
+      - tAgg
+    env: netscaler_stats
+
+processor:
+  - name: Aggregator
+    module: Aggregator
+    transport:
+      in:
+        - tAgg
+      out:
+        - tRRD
+        #- tDump
+    interval: 60
+    default_pivot: device
+    pivot:
+      default:
+        - event_type
+      by_cpu:
+        - nsCPUname
+      by_sys_health:
+        - sysHealthCounterName
+      by_disk:
+        - sysHealthDiskName
+      by_check:
+        - monServiceName
+        - monitorName
+      by_service:
+        - svcServiceName
+      by_vip:
+        - vsvrName
+        - vsvrPort
+    rules:
+
+      # nsResourceGroup
+      memSizeMB:
+        cf: [ Avg ]
+      numCPUs:
+        cf: [ Avg ]
+      numPEs:
+        cf: [ Avg ]
+      numSSLCards:
+        cf: [ Avg ]
+      resCpuUsage:
+        cf: [ Avg ]
+      resMemUsage:
+        cf: [ Avg ]
+
+      # nsCPUEntry
+      nsCPUusage:
+        cf: [ Avg ]
+
+      # nsIpStatsGroup
+      ipTotAddrLookup:
+        cf: [ Avg ]
+      ipTotAddrLookupFail:
+        cf: [ Avg ]
+      ipTotBadChecksums:
+        cf: [ Avg ]
+      ipTotBadMacAddrs:
+        cf: [ Avg ]
+      ipTotBadTransport:
+        cf: [ Avg ]
+      ipTotBadlens:
+        cf: [ Avg ]
+      ipTotDupFragments:
+        cf: [ Avg ]
+      ipTotFixHeaderFail:
+        cf: [ Avg ]
+      ipTotFragPktsGen:
+        cf: [ Avg ]
+      ipTotFragments:
+        cf: [ Avg ]
+      ipTotInvalidHeaderSz:
+        cf: [ Avg ]
+      ipTotInvalidPacketSize:
+        cf: [ Avg ]
+      ipTotLandattacks:
+        cf: [ Avg ]
+      ipTotMaxClients:
+        cf: [ Avg ]
+      ipTotOutOfOrderFrag:
+        cf: [ Avg ]
+      ipTotReassemblyAttempt:
+        cf: [ Avg ]
+      ipTotRxBytes:
+        cf: [ Avg ]
+      ipTotRxMbits:
+        cf: [ Avg ]
+      ipTotRxPkts:
+        cf: [ Avg ]
+      ipTotSuccReassembly:
+        cf: [ Avg ]
+      ipTotTCPfragmentsFwd:
+        cf: [ Avg ]
+      ipTotTooBig:
+        cf: [ Avg ]
+      ipTotTruncatedPackets:
+        cf: [ Avg ]
+      ipTotTtlExpired:
+        cf: [ Avg ]
+      ipTotTxBytes:
+        cf: [ Avg ]
+      ipTotTxMbits:
+        cf: [ Avg ]
+      ipTotTxPkts:
+        cf: [ Avg ]
+      ipTotUDPfragmentsFwd:
+        cf: [ Avg ]
+      ipTotUnknownDstRcvd:
+        cf: [ Avg ]
+      ipTotUnknownSvcs:
+        cf: [ Avg ]
+      ipTotUnsuccReassembly:
+        cf: [ Avg ]
+      ipTotVIPDown:
+        cf: [ Avg ]
+      ipTotZeroFragmentLen:
+        cf: [ Avg ]
+      ipTotZeroNextHop:
+        cf: [ Avg ]
+      nonIpTotTruncatedPackets:
+        cf: [ Avg ]
+
+      # nsIcmpStatsGroup
+      icmpCurRateThreshold:
+        cf: [ Avg ]
+      icmpTotBadChecksum:
+        cf: [ Avg ]
+      icmpTotBadPMTUIpChecksum:
+        cf: [ Avg ]
+      icmpTotBigNextMTU:
+        cf: [ Avg ]
+      icmpTotDstIpLookup:
+        cf: [ Avg ]
+      icmpTotInvalidBodyLen:
+        cf: [ Avg ]
+      icmpTotInvalidNextMTUval:
+        cf: [ Avg ]
+      icmpTotInvalidProtocol:
+        cf: [ Avg ]
+      icmpTotInvalidTcpSeqno:
+        cf: [ Avg ]
+      icmpTotNeedFragRx:
+        cf: [ Avg ]
+      icmpTotNoTcpConn:
+        cf: [ Avg ]
+      icmpTotNoUdpConn:
+        cf: [ Avg ]
+      icmpTotNonFirstIpFrag:
+        cf: [ Avg ]
+      icmpTotPMTUDiscoveryDisabled:
+        cf: [ Avg ]
+      icmpTotPMTUnoLink:
+        cf: [ Avg ]
+      icmpTotPktsDropped:
+        cf: [ Avg ]
+      icmpTotPortUnreachableRx:
+        cf: [ Avg ]
+      icmpTotPortUnreachableTx:
+        cf: [ Avg ]
+      icmpTotRxBytes:
+        cf: [ Avg ]
+      icmpTotRxEcho:
+        cf: [ Avg ]
+      icmpTotRxEchoReply:
+        cf: [ Avg ]
+      icmpTotRxPkts:
+        cf: [ Avg ]
+      icmpTotThresholdExceeds:
+        cf: [ Avg ]
+      icmpTotTxBytes:
+        cf: [ Avg ]
+      icmpTotTxEchoReply:
+        cf: [ Avg ]
+      icmpTotTxPkts:
+        cf: [ Avg ]
+
+      # nsUdpStatsGroup
+      udpBadChecksum:
+        cf: [ Avg ]
+      udpCurRateThreshold:
+        cf: [ Avg ]
+      udpCurRateThresholdExceeds:
+        cf: [ Avg ]
+      udpTotRxBytes:
+        cf: [ Avg ]
+      udpTotRxPkts:
+        cf: [ Avg ]
+      udpTotTxBytes:
+        cf: [ Avg ]
+      udpTotTxPkts:
+        cf: [ Avg ]
+      udpTotUnknownSvcPkts:
+        cf: [ Avg ]
+
+      # nsTcpStatsGroup
+      pcbTotZombieCall:
+        cf: [ Avg ]
+      tcpActiveServerConn:
+        cf: [ Avg ]
+      tcpCurClientConn:
+        cf: [ Avg ]
+      tcpCurClientConnClosing:
+        cf: [ Avg ]
+      tcpCurClientConnEstablished:
+        cf: [ Avg ]
+      tcpCurClientConnOpening:
+        cf: [ Avg ]
+      tcpCurPhysicalServers:
+        cf: [ Avg ]
+      tcpCurServerConn:
+        cf: [ Avg ]
+      tcpCurServerConnClosing:
+        cf: [ Avg ]
+      tcpCurServerConnEstablished:
+        cf: [ Avg ]
+      tcpCurServerConnOpening:
+        cf: [ Avg ]
+      tcpErrAnyPortFail:
+        cf: [ Avg ]
+      tcpErrBadCheckSum:
+        cf: [ Avg ]
+      tcpErrBadStateConn:
+        cf: [ Avg ]
+      tcpErrCltHole:
+        cf: [ Avg ]
+      tcpErrCltOutOfOrder:
+        cf: [ Avg ]
+      tcpErrCltRetrasmit:
+        cf: [ Avg ]
+      tcpErrCookiePktMssReject:
+        cf: [ Avg ]
+      tcpErrCookiePktSeqDrop:
+        cf: [ Avg ]
+      tcpErrCookiePktSeqReject:
+        cf: [ Avg ]
+      tcpErrCookiePktSigReject:
+        cf: [ Avg ]
+      tcpErrDataAfterFin:
+        cf: [ Avg ]
+      tcpErrFastRetransmissions:
+        cf: [ Avg ]
+      tcpErrFifthRetransmissions:
+        cf: [ Avg ]
+      tcpErrFinDup:
+        cf: [ Avg ]
+      tcpErrFinGiveUp:
+        cf: [ Avg ]
+      tcpErrFinRetry:
+        cf: [ Avg ]
+      tcpErrFirstRetransmissions:
+        cf: [ Avg ]
+      tcpErrForthRetransmissions:
+        cf: [ Avg ]
+      tcpErrFullRetrasmit:
+        cf: [ Avg ]
+      tcpErrIpPortFail:
+        cf: [ Avg ]
+      tcpErrOutOfWindowPkts:
+        cf: [ Avg ]
+      tcpErrPartialRetrasmit:
+        cf: [ Avg ]
+      tcpErrRetransmit:
+        cf: [ Avg ]
+      tcpErrRetransmitGiveUp:
+        cf: [ Avg ]
+      tcpErrRst:
+        cf: [ Avg ]
+      tcpErrRstInTimewait:
+        cf: [ Avg ]
+      tcpErrRstNonEst:
+        cf: [ Avg ]
+      tcpErrRstOutOfWindow:
+        cf: [ Avg ]
+      tcpErrRstThreshold:
+        cf: [ Avg ]
+      tcpErrSecondRetransmissions:
+        cf: [ Avg ]
+      tcpErrSentRst:
+        cf: [ Avg ]
+      tcpErrSeventhRetransmissions:
+        cf: [ Avg ]
+      tcpErrSixthRetransmissions:
+        cf: [ Avg ]
+      tcpErrStrayPkt:
+        cf: [ Avg ]
+      tcpErrSvrHole:
+        cf: [ Avg ]
+      tcpErrSvrOutOfOrder:
+        cf: [ Avg ]
+      tcpErrSvrRetrasmit:
+        cf: [ Avg ]
+      tcpErrSynDroppedCongestion:
+        cf: [ Avg ]
+      tcpErrSynGiveUp:
+        cf: [ Avg ]
+      tcpErrSynInEst:
+        cf: [ Avg ]
+      tcpErrSynInSynRcvd:
+        cf: [ Avg ]
+      tcpErrSynRetry:
+        cf: [ Avg ]
+      tcpErrSynSentBadAck:
+        cf: [ Avg ]
+      tcpErrThirdRetransmissions:
+        cf: [ Avg ]
+      tcpReuseHit:
+        cf: [ Avg ]
+      tcpSpareConn:
+        cf: [ Avg ]
+      tcpSurgeQueueLen:
+        cf: [ Avg ]
+      tcpTotClientConnClosed:
+        cf: [ Avg ]
+      tcpTotClientConnOpenRate:
+        cf: [ Avg ]
+      tcpTotClientConnOpened:
+        cf: [ Avg ]
+      tcpTotCltFin:
+        cf: [ Avg ]
+      tcpTotFinWaitClosed:
+        cf: [ Avg ]
+      tcpTotRxBytes:
+        cf: [ Avg ]
+      tcpTotRxPkts:
+        cf: [ Avg ]
+      tcpTotServerConnClosed:
+        cf: [ Avg ]
+      tcpTotServerConnOpened:
+        cf: [ Avg ]
+      tcpTotSvrFin:
+        cf: [ Avg ]
+      tcpTotSyn:
+        cf: [ Avg ]
+      tcpTotSynFlush:
+        cf: [ Avg ]
+      tcpTotSynHeld:
+        cf: [ Avg ]
+      tcpTotSynProbe:
+        cf: [ Avg ]
+      tcpTotTxBytes:
+        cf: [ Avg ]
+      tcpTotTxPkts:
+        cf: [ Avg ]
+      tcpTotZombieActiveHalfCloseCltConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombieActiveHalfCloseSvrConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombieCltConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombieHalfOpenCltConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombieHalfOpenSvrConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombiePassiveHalfCloseCltConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombiePassiveHalfCloseSrvConnFlushed:
+        cf: [ Avg ]
+      tcpTotZombieSvrConnFlushed:
+        cf: [ Avg ]
+      tcpWaitToData:
+        cf: [ Avg ]
+      tcpWaitToSyn:
+        cf: [ Avg ]
+
+      # nsHttpStatsGroup
+      httpErrIncompleteHeaders:
+        cf: [ Avg ]
+      httpErrIncompleteRequests:
+        cf: [ Avg ]
+      httpErrIncompleteResponses:
+        cf: [ Avg ]
+      httpErrLargeChunk:
+        cf: [ Avg ]
+      httpErrLargeContent:
+        cf: [ Avg ]
+      httpErrLargeCtlen:
+        cf: [ Avg ]
+      httpErrNoreuseMultipart:
+        cf: [ Avg ]
+      httpErrServerBusy:
+        cf: [ Avg ]
+      httpTot10Requests:
+        cf: [ Avg ]
+      httpTot10Responses:
+        cf: [ Avg ]
+      httpTot11Requests:
+        cf: [ Avg ]
+      httpTot11Responses:
+        cf: [ Avg ]
+      httpTotChunkedRequests:
+        cf: [ Avg ]
+      httpTotChunkedResponses:
+        cf: [ Avg ]
+      httpTotClenRequests:
+        cf: [ Avg ]
+      httpTotClenResponses:
+        cf: [ Avg ]
+      httpTotGets:
+        cf: [ Avg ]
+      httpTotNoClenChunkResponses:
+        cf: [ Avg ]
+      httpTotOthers:
+        cf: [ Avg ]
+      httpTotPosts:
+        cf: [ Avg ]
+      httpTotRequests:
+        cf: [ Avg ]
+      httpTotResponses:
+        cf: [ Avg ]
+      httpTotRxRequestBytes:
+        cf: [ Avg ]
+      httpTotRxResponseBytes:
+        cf: [ Avg ]
+      httpTotTxRequestBytes:
+        cf: [ Avg ]
+      httpTotTxResponseBytes:
+        cf: [ Avg ]
+
+      # nsCacheStatsGroup
+      cache64MaxMemoryKB:
+        cf: [ Avg ]
+      cacheBytesServed:
+        cf: [ Avg ]
+      cacheCompressedBytesServed:
+        cf: [ Avg ]
+      cacheCurHits:
+        cf: [ Avg ]
+      cacheCurMisses:
+        cf: [ Avg ]
+      cacheErrMemAlloc:
+        cf: [ Avg ]
+      cacheLargestResponseReceived:
+        cf: [ Avg ]
+      cacheMaxMemoryActiveKB:
+        cf: [ Avg ]
+      cacheMaxMemoryKB:
+        cf: [ Avg ]
+      cacheNumCached:
+        cf: [ Avg ]
+      cacheNumMarker:
+        cf: [ Avg ]
+      cachePercent304Hits:
+        cf: [ Avg ]
+      cachePercentByteHit:
+        cf: [ Avg ]
+      cachePercentHit:
+        cf: [ Avg ]
+      cachePercentOriginBandwidthSaved:
+        cf: [ Avg ]
+      cachePercentParameterized304Hits:
+        cf: [ Avg ]
+      cachePercentPetHits:
+        cf: [ Avg ]
+      cachePercentStoreAbleMiss:
+        cf: [ Avg ]
+      cachePercentSuccessfulRevalidation:
+        cf: [ Avg ]
+      cacheRecentPercent304Hits:
+        cf: [ Avg ]
+      cacheRecentPercentByteHit:
+        cf: [ Avg ]
+      cacheRecentPercentHit:
+        cf: [ Avg ]
+      cacheRecentPercentOriginBandwidthSaved:
+        cf: [ Avg ]
+      cacheRecentPercentParameterizedHits:
+        cf: [ Avg ]
+      cacheRecentPercentStoreAbleMiss:
+        cf: [ Avg ]
+      cacheRecentPercentSuccessfulRevalidation:
+        cf: [ Avg ]
+      cacheTot304Hits:
+        cf: [ Avg ]
+      cacheTotExpireAtLastByte:
+        cf: [ Avg ]
+      cacheTotFlashcacheHits:
+        cf: [ Avg ]
+      cacheTotFlashcacheMisses:
+        cf: [ Avg ]
+      cacheTotFullToConditionalRequest:
+        cf: [ Avg ]
+      cacheTotHits:
+        cf: [ Avg ]
+      cacheTotInvalidationRequests:
+        cf: [ Avg ]
+      cacheTotMisses:
+        cf: [ Avg ]
+      cacheTotNon304Hits:
+        cf: [ Avg ]
+      cacheTotNonParameterizedInvalidationRequests:
+        cf: [ Avg ]
+      cacheTotNonStoreAbleMisses:
+        cf: [ Avg ]
+      cacheTotParameterized304Hits:
+        cf: [ Avg ]
+      cacheTotParameterizedHits:
+        cf: [ Avg ]
+      cacheTotParameterizedInvalidationRequests:
+        cf: [ Avg ]
+      cacheTotParameterizedNon304Hits:
+        cf: [ Avg ]
+      cacheTotParameterizedRequests:
+        cf: [ Avg ]
+      cacheTotPetHits:
+        cf: [ Avg ]
+      cacheTotPetRequests:
+        cf: [ Avg ]
+      cacheTotRequests:
+        cf: [ Avg ]
+      cacheTotResponseBytes:
+        cf: [ Avg ]
+      cacheTotRevalidationMiss:
+        cf: [ Avg ]
+      cacheTotStoreAbleMisses:
+        cf: [ Avg ]
+      cacheTotSuccessfulRevalidation:
+        cf: [ Avg ]
+      cacheUtilizedMemoryKB:
+        cf: [ Avg ]
+
+      # nsCompressionStatsGroup
+      compHttpBandwidthSaving:
+        cf: [ Avg ]
+      compRatio:
+        cf: [ Avg ]
+      compTcpBandwidthSaving:
+        cf: [ Avg ]
+      compTcpRatio:
+        cf: [ Avg ]
+      compTcpTotalEoi:
+        cf: [ Avg ]
+      compTcpTotalPush:
+        cf: [ Avg ]
+      compTcpTotalQuantum:
+        cf: [ Avg ]
+      compTcpTotalRxBytes:
+        cf: [ Avg ]
+      compTcpTotalRxPackets:
+        cf: [ Avg ]
+      compTcpTotalTimer:
+        cf: [ Avg ]
+      compTcpTotalTxBytes:
+        cf: [ Avg ]
+      compTcpTotalTxPackets:
+        cf: [ Avg ]
+      compTotalDataCompressionRatio:
+        cf: [ Avg ]
+      compTotalRequests:
+        cf: [ Avg ]
+      compTotalRxBytes:
+        cf: [ Avg ]
+      compTotalRxPackets:
+        cf: [ Avg ]
+      compTotalTxBytes:
+        cf: [ Avg ]
+      compTotalTxPackets:
+        cf: [ Avg ]
+      deCompTcpBandwidthSaving:
+        cf: [ Avg ]
+      deCompTcpErrData:
+        cf: [ Avg ]
+      deCompTcpErrLessData:
+        cf: [ Avg ]
+      deCompTcpErrMemory:
+        cf: [ Avg ]
+      deCompTcpErrMoreData:
+        cf: [ Avg ]
+      deCompTcpErrUnknown:
+        cf: [ Avg ]
+      deCompTcpRatio:
+        cf: [ Avg ]
+      deCompTcpRxBytes:
+        cf: [ Avg ]
+      deCompTcpRxPackets:
+        cf: [ Avg ]
+      deCompTcpTxBytes:
+        cf: [ Avg ]
+      deCompTcpTxPackets:
+        cf: [ Avg ]
+      delBwSaving:
+        cf: [ Avg ]
+      delCmpRatio:
+        cf: [ Avg ]
+      delCompBaseServed:
+        cf: [ Avg ]
+      delCompBaseTcpTxBytes:
+        cf: [ Avg ]
+      delCompDone:
+        cf: [ Avg ]
+      delCompErrBFileWHdrFailed:
+        cf: [ Avg ]
+      delCompErrBypassed:
+        cf: [ Avg ]
+      delCompErrNostoreMiss:
+        cf: [ Avg ]
+      delCompErrReqinfoAllocfail:
+        cf: [ Avg ]
+      delCompErrReqinfoToobig:
+        cf: [ Avg ]
+      delCompErrSessallocFail:
+        cf: [ Avg ]
+      delCompFirstAccess:
+        cf: [ Avg ]
+      delCompTcpRxBytes:
+        cf: [ Avg ]
+      delCompTcpRxPackets:
+        cf: [ Avg ]
+      delCompTcpTxBytes:
+        cf: [ Avg ]
+      delCompTcpTxPackets:
+        cf: [ Avg ]
+      delCompTotalRequests:
+        cf: [ Avg ]
+
+      # serviceGlobalStatsGroup
+      serverCount:
+        cf: [ Avg ]
+      svcCount:
+        cf: [ Avg ]
+      svcgroupCount:
+        cf: [ Avg ]
+      svcgroupmemCount:
+        cf: [ Avg ]
+
+      # nsSysHealthEntry
+      sysHealthCounterValue:
+        cf: [ Avg ]
+
+      # nsSysHealthDiskEntry
+      sysHealthDiskAvail:
+        cf: [ Avg ]
+      #sysHealthDiskName:
+        #cf: [ Avg ]
+      sysHealthDiskPerusage:
+        cf: [ Avg ]
+      sysHealthDiskSize:
+        cf: [ Avg ]
+      sysHealthDiskUsed:
+        cf: [ Avg ]
+
+      # vserverEntry
+      #vsvrActiveActiveState:
+        #cf: [ Avg ]
+      vsvrClientConnOpenRate:
+        cf: [ Avg ]
+      vsvrCurClntConnections:
+        cf: [ Avg ]
+      vsvrCurServicesDown:
+        cf: [ Avg ]
+      vsvrCurServicesOutOfSvc:
+        cf: [ Avg ]
+      vsvrCurServicesTransToOutOfSvc:
+        cf: [ Avg ]
+      vsvrCurServicesUnKnown:
+        cf: [ Avg ]
+      vsvrCurServicesUp:
+        cf: [ Avg ]
+      vsvrCurSrvrConnections:
+        cf: [ Avg ]
+      vsvrCurSslVpnUsers:
+        cf: [ Avg ]
+      #vsvrEntityType:
+        #cf: [ Avg ]
+      #vsvrFullName:
+        #cf: [ Avg ]
+      vsvrHealth:
+        cf: [ Avg ]
+      #vsvrIp6Address:
+        #cf: [ Avg ]
+      #vsvrIpAddress:
+        #cf: [ Avg ]
+      #vsvrName:
+        #cf: [ Avg ]
+      #vsvrPort:
+        #cf: [ Avg ]
+      vsvrRequestRate:
+        cf: [ Avg ]
+      vsvrRxBytesRate:
+        cf: [ Avg ]
+      #vsvrState:
+        #cf: [ Avg ]
+      vsvrSurgeCount:
+        cf: [ Avg ]
+      vsvrSynfloodRate:
+        cf: [ Avg ]
+      #vsvrTicksSinceLastStateChange:
+        #cf: [ Avg ]
+      vsvrTotHits:
+        cf: [ Avg ]
+      vsvrTotMiss:
+        cf: [ Avg ]
+      vsvrTotSpillOvers:
+        cf: [ Avg ]
+      vsvrTotalClients:
+        cf: [ Avg ]
+      vsvrTotalPktsRecvd:
+        cf: [ Avg ]
+      vsvrTotalPktsSent:
+        cf: [ Avg ]
+      vsvrTotalRequestBytes:
+        cf: [ Avg ]
+      vsvrTotalRequests:
+        cf: [ Avg ]
+      vsvrTotalResponseBytes:
+        cf: [ Avg ]
+      vsvrTotalResponses:
+        cf: [ Avg ]
+      vsvrTotalServers:
+        cf: [ Avg ]
+      vsvrTotalServicesBound:
+        cf: [ Avg ]
+      vsvrTotalSynsRecvd:
+        cf: [ Avg ]
+      vsvrTxBytesRate:
+        cf: [ Avg ]
+      #vsvrType:
+        #cf: [ Avg ]
+
+      # serviceEntry
+      svcActiveConn:
+        cf: [ Avg ]
+      svcActiveTransactions:
+        cf: [ Avg ]
+      svcAvgSvrTTFB:
+        cf: [ Avg ]
+      #svcAvgTransactionTime:
+        #cf: [ Avg ]
+      svcCurClntConnections:
+        cf: [ Avg ]
+      svcEstablishedConn:
+        cf: [ Avg ]
+      #svcGslbSiteName:
+        #cf: [ Avg ]
+      #svcInetAddress:
+        #cf: [ Avg ]
+      #svcInetAddressType:
+        #cf: [ Avg ]
+      #svcIpAddress:
+        #cf: [ Avg ]
+      svcMaxClients:
+        cf: [ Avg ]
+      svcMaxReqPerConn:
+        cf: [ Avg ]
+      #svcPort:
+        #cf: [ Avg ]
+      svcRequestRate:
+        cf: [ Avg ]
+      svcRxBytesRate:
+        cf: [ Avg ]
+      #svcServiceFullName:
+        #cf: [ Avg ]
+      #svcServiceName:
+        #cf: [ Avg ]
+      #svcServiceType:
+        #cf: [ Avg ]
+      #svcState:
+        #cf: [ Avg ]
+      svcSurgeCount:
+        cf: [ Avg ]
+      svcSynfloodRate:
+        cf: [ Avg ]
+      #svcTicksSinceLastStateChange:
+        #cf: [ Avg ]
+      svcTotalClients:
+        cf: [ Avg ]
+      svcTotalPktsRecvd:
+        cf: [ Avg ]
+      svcTotalPktsSent:
+        cf: [ Avg ]
+      svcTotalRequestBytes:
+        cf: [ Avg ]
+      svcTotalRequests:
+        cf: [ Avg ]
+      svcTotalResponseBytes:
+        cf: [ Avg ]
+      svcTotalResponses:
+        cf: [ Avg ]
+      svcTotalServers:
+        cf: [ Avg ]
+      svcTotalSynsRecvd:
+        cf: [ Avg ]
+      svcTxBytesRate:
+        cf: [ Avg ]
+      svcdosQDepth:
+        cf: [ Avg ]
+      svctotalJsTransactions:
+        cf: [ Avg ]
+
+      # monServiceMemberEntry
+      #alarmMonrespto:
+        #cf: [ Avg ]
+      drtmLearningProbes:
+        cf: [ Avg ]
+      drtmRTO:
+        cf: [ Avg ]
+      #monServiceName:
+        #cf: [ Avg ]
+      monitorCurFailedCount:
+        cf: [ Avg ]
+      monitorFailed:
+        cf: [ Avg ]
+      monitorFailedCode:
+        cf: [ Avg ]
+      monitorFailedCon:
+        cf: [ Avg ]
+      monitorFailedFTP:
+        cf: [ Avg ]
+      monitorFailedId:
+        cf: [ Avg ]
+      monitorFailedPort:
+        cf: [ Avg ]
+      monitorFailedResponse:
+        cf: [ Avg ]
+      monitorFailedSend:
+        cf: [ Avg ]
+      monitorFailedStr:
+        cf: [ Avg ]
+      monitorFailedTimeout:
+        cf: [ Avg ]
+      monitorMaxClient:
+        cf: [ Avg ]
+      monitorProbes:
+        cf: [ Avg ]
+      monitorProbesNoChange:
+        cf: [ Avg ]
+      monitorRTO:
+        cf: [ Avg ]
+      monitorResponseTimeoutThreshExceed:
+        cf: [ Avg ]
+      #monitorState:
+        #cf: [ Avg ]
+      monitorWeight:
+        cf: [ Avg ]
+
+sender:
+  - name: Dump
+    module: Dump
+    transport:
+      - tDump
+
+  - name: RRD
+    module: RRD
+    transport:
+      - tRRD
+    datadir: '/var/lib/imon/rrd'
+    step: 60
+    hb: 600
+    rras:
+      - 'RRA:AVERAGE:0.5:1:44640'
+    ds_type:
+      # vserverEntry
+      vsvrSurgeCount: COUNTER
+      vsvrTotHits: COUNTER
+      vsvrTotMiss: COUNTER
+      vsvrTotSpillOvers: COUNTER
+      vsvrTotalClients: COUNTER
+      vsvrTotalPktsRecvd: COUNTER
+      vsvrTotalPktsSent: COUNTER
+      vsvrTotalRequestBytes: COUNTER
+      vsvrTotalRequests: COUNTER
+      vsvrTotalResponseBytes: COUNTER
+      vsvrTotalResponses: COUNTER
+      vsvrTotalServers: COUNTER
+      vsvrTotalSynsRecvd: COUNTER
+      # serviceEntry
+      svcEstablishedConn: COUNTER
+      svcSurgeCount: COUNTER
+      svcTotalClients: COUNTER
+      svcTotalPktsRecvd: COUNTER
+      svcTotalPktsSent: COUNTER
+      svcTotalRequestBytes: COUNTER
+      svcTotalRequests: COUNTER
+      svcTotalResponseBytes: COUNTER
+      svcTotalResponses: COUNTER
+      svcTotalServers: COUNTER
+      svcTotalSynsRecvd: COUNTER
+      svcdosQDepth: COUNTER
+      svctotalJsTransactions: COUNTER
+
+      # nsIpStatsGroup
+      ipTotAddrLookup: COUNTER
+      ipTotAddrLookupFail: COUNTER
+      ipTotBadChecksums: COUNTER
+      ipTotBadMacAddrs: COUNTER
+      ipTotBadTransport: COUNTER
+      ipTotBadlens: COUNTER
+      ipTotDupFragments: COUNTER
+      ipTotFixHeaderFail: COUNTER
+      ipTotFragPktsGen: COUNTER
+      ipTotFragments: COUNTER
+      ipTotInvalidHeaderSz: COUNTER
+      ipTotInvalidPacketSize: COUNTER
+      ipTotLandattacks: COUNTER
+      ipTotMaxClients: COUNTER
+      ipTotOutOfOrderFrag: COUNTER
+      ipTotReassemblyAttempt: COUNTER
+      ipTotRxBytes: COUNTER
+      ipTotRxMbits: COUNTER
+      ipTotRxPkts: COUNTER
+      ipTotSuccReassembly: COUNTER
+      ipTotTCPfragmentsFwd: COUNTER
+      ipTotTooBig: COUNTER
+      ipTotTruncatedPackets: COUNTER
+      ipTotTtlExpired: COUNTER
+      ipTotTxBytes: COUNTER
+      ipTotTxMbits: COUNTER
+      ipTotTxPkts: COUNTER
+      ipTotUDPfragmentsFwd: COUNTER
+      ipTotUnknownDstRcvd: COUNTER
+      ipTotUnknownSvcs: COUNTER
+      ipTotUnsuccReassembly: COUNTER
+      ipTotVIPDown: COUNTER
+      ipTotZeroFragmentLen: COUNTER
+      ipTotZeroNextHop: COUNTER
+      nonIpTotTruncatedPackets: COUNTER
+
+      # nsIcmpStatsGroup
+      icmpTotBadChecksum: COUNTER
+      icmpTotBadPMTUIpChecksum: COUNTER
+      icmpTotBigNextMTU: COUNTER
+      icmpTotDstIpLookup: COUNTER
+      icmpTotInvalidBodyLen: COUNTER
+      icmpTotInvalidNextMTUval: COUNTER
+      icmpTotInvalidProtocol: COUNTER
+      icmpTotInvalidTcpSeqno: COUNTER
+      icmpTotNeedFragRx: COUNTER
+      icmpTotNoTcpConn: COUNTER
+      icmpTotNoUdpConn: COUNTER
+      icmpTotNonFirstIpFrag: COUNTER
+      icmpTotPMTUDiscoveryDisabled: COUNTER
+      icmpTotPMTUnoLink: COUNTER
+      icmpTotPktsDropped: COUNTER
+      icmpTotPortUnreachableRx: COUNTER
+      icmpTotPortUnreachableTx: COUNTER
+      icmpTotRxBytes: COUNTER
+      icmpTotRxEcho: COUNTER
+      icmpTotRxEchoReply: COUNTER
+      icmpTotRxPkts: COUNTER
+      icmpTotThresholdExceeds: COUNTER
+      icmpTotTxBytes: COUNTER
+      icmpTotTxEchoReply: COUNTER
+      icmpTotTxPkts: COUNTER
+
+      # nsUdpStatsGroup
+      udpBadChecksum: COUNTER
+      udpCurRateThreshold: COUNTER
+      udpCurRateThresholdExceeds: COUNTER
+      udpTotRxBytes: COUNTER
+      udpTotRxPkts: COUNTER
+      udpTotTxBytes: COUNTER
+      udpTotTxPkts: COUNTER
+      udpTotUnknownSvcPkts: COUNTER
+
+      # nsTcpStatsGroup
+      pcbTotZombieCall: COUNTER
+      tcpErrAnyPortFail: COUNTER
+      tcpErrBadCheckSum: COUNTER
+      tcpErrBadStateConn: COUNTER
+      tcpErrCltHole: COUNTER
+      tcpErrCltOutOfOrder: COUNTER
+      tcpErrCltRetrasmit: COUNTER
+      tcpErrCookiePktMssReject: COUNTER
+      tcpErrCookiePktSeqDrop: COUNTER
+      tcpErrCookiePktSeqReject: COUNTER
+      tcpErrCookiePktSigReject: COUNTER
+      tcpErrDataAfterFin: COUNTER
+      tcpErrFastRetransmissions: COUNTER
+      tcpErrFifthRetransmissions: COUNTER
+      tcpErrFinDup: COUNTER
+      tcpErrFinGiveUp: COUNTER
+      tcpErrFinRetry: COUNTER
+      tcpErrFirstRetransmissions: COUNTER
+      tcpErrForthRetransmissions: COUNTER
+      tcpErrFullRetrasmit: COUNTER
+      tcpErrIpPortFail: COUNTER
+      tcpErrOutOfWindowPkts: COUNTER
+      tcpErrPartialRetrasmit: COUNTER
+      tcpErrRetransmit: COUNTER
+      tcpErrRetransmitGiveUp: COUNTER
+      tcpErrRst: COUNTER
+      tcpErrRstInTimewait: COUNTER
+      tcpErrRstNonEst: COUNTER
+      tcpErrRstOutOfWindow: COUNTER
+      tcpErrRstThreshold: COUNTER
+      tcpErrSecondRetransmissions: COUNTER
+      tcpErrSentRst: COUNTER
+      tcpErrSeventhRetransmissions: COUNTER
+      tcpErrSixthRetransmissions: COUNTER
+      tcpErrStrayPkt: COUNTER
+      tcpErrSvrHole: COUNTER
+      tcpErrSvrOutOfOrder: COUNTER
+      tcpErrSvrRetrasmit: COUNTER
+      tcpErrSynDroppedCongestion: COUNTER
+      tcpErrSynGiveUp: COUNTER
+      tcpErrSynInEst: COUNTER
+      tcpErrSynInSynRcvd: COUNTER
+      tcpErrSynRetry: COUNTER
+      tcpErrSynSentBadAck: COUNTER
+      tcpErrThirdRetransmissions: COUNTER
+      tcpTotClientConnClosed: COUNTER
+      tcpTotClientConnOpened: COUNTER
+      tcpTotCltFin: COUNTER
+      tcpTotFinWaitClosed: COUNTER
+      tcpTotRxBytes: COUNTER
+      tcpTotRxPkts: COUNTER
+      tcpTotServerConnClosed: COUNTER
+      tcpTotServerConnOpened: COUNTER
+      tcpTotSvrFin: COUNTER
+      tcpTotSyn: COUNTER
+      tcpTotSynFlush: COUNTER
+      tcpTotSynHeld: COUNTER
+      tcpTotSynProbe: COUNTER
+      tcpTotTxBytes: COUNTER
+      tcpTotTxPkts: COUNTER
+      tcpTotZombieActiveHalfCloseCltConnFlushed: COUNTER
+      tcpTotZombieActiveHalfCloseSvrConnFlushed: COUNTER
+      tcpTotZombieCltConnFlushed: COUNTER
+      tcpTotZombieHalfOpenCltConnFlushed: COUNTER
+      tcpTotZombieHalfOpenSvrConnFlushed: COUNTER
+      tcpTotZombiePassiveHalfCloseCltConnFlushed: COUNTER
+      tcpTotZombiePassiveHalfCloseSrvConnFlushed: COUNTER
+      tcpTotZombieSvrConnFlushed: COUNTER
+      tcpWaitToData: COUNTER
+      tcpWaitToSyn: COUNTER
+
+      # nsHttpStatsGroup
+      httpErrIncompleteHeaders: COUNTER
+      httpErrIncompleteRequests: COUNTER
+      httpErrIncompleteResponses: COUNTER
+      httpErrLargeChunk: COUNTER
+      httpErrLargeContent: COUNTER
+      httpErrLargeCtlen: COUNTER
+      httpErrNoreuseMultipart: COUNTER
+      httpErrServerBusy: COUNTER
+      httpTot10Requests: COUNTER
+      httpTot10Responses: COUNTER
+      httpTot11Requests: COUNTER
+      httpTot11Responses: COUNTER
+      httpTotChunkedRequests: COUNTER
+      httpTotChunkedResponses: COUNTER
+      httpTotClenRequests: COUNTER
+      httpTotClenResponses: COUNTER
+      httpTotGets: COUNTER
+      httpTotNoClenChunkResponses: COUNTER
+      httpTotOthers: COUNTER
+      httpTotPosts: COUNTER
+      httpTotRequests: COUNTER
+      httpTotResponses: COUNTER
+      httpTotRxRequestBytes: COUNTER
+      httpTotRxResponseBytes: COUNTER
+      httpTotTxRequestBytes: COUNTER
+      httpTotTxResponseBytes: COUNTER
+
+      # nsCacheStatsGroup
+      cache64MaxMemoryKB: COUNTER
+      cacheBytesServed: COUNTER
+      cacheCompressedBytesServed: COUNTER
+      cacheErrMemAlloc: COUNTER
+      cacheLargestResponseReceived: COUNTER
+      cacheMaxMemoryActiveKB: COUNTER
+      cacheMaxMemoryKB: COUNTER
+      cacheNumCached: COUNTER
+      cacheNumMarker: COUNTER
+      cachePercent304Hits: COUNTER
+      cachePercentByteHit: COUNTER
+      cachePercentHit: COUNTER
+      cachePercentOriginBandwidthSaved: COUNTER
+      cachePercentParameterized304Hits: COUNTER
+      cachePercentPetHits: COUNTER
+      cachePercentStoreAbleMiss: COUNTER
+      cachePercentSuccessfulRevalidation: COUNTER
+      cacheRecentPercent304Hits: COUNTER
+      cacheRecentPercentByteHit: COUNTER
+      cacheRecentPercentHit: COUNTER
+      cacheRecentPercentOriginBandwidthSaved: COUNTER
+      cacheRecentPercentParameterizedHits: COUNTER
+      cacheRecentPercentStoreAbleMiss: COUNTER
+      cacheRecentPercentSuccessfulRevalidation: COUNTER
+      cacheTot304Hits: COUNTER
+      cacheTotExpireAtLastByte: COUNTER
+      cacheTotFlashcacheHits: COUNTER
+      cacheTotFlashcacheMisses: COUNTER
+      cacheTotFullToConditionalRequest: COUNTER
+      cacheTotHits: COUNTER
+      cacheTotInvalidationRequests: COUNTER
+      cacheTotMisses: COUNTER
+      cacheTotNon304Hits: COUNTER
+      cacheTotNonParameterizedInvalidationRequests: COUNTER
+      cacheTotNonStoreAbleMisses: COUNTER
+      cacheTotParameterized304Hits: COUNTER
+      cacheTotParameterizedHits: COUNTER
+      cacheTotParameterizedInvalidationRequests: COUNTER
+      cacheTotParameterizedNon304Hits: COUNTER
+      cacheTotParameterizedRequests: COUNTER
+      cacheTotPetHits: COUNTER
+      cacheTotPetRequests: COUNTER
+      cacheTotRequests: COUNTER
+      cacheTotResponseBytes: COUNTER
+      cacheTotRevalidationMiss: COUNTER
+      cacheTotStoreAbleMisses: COUNTER
+      cacheTotSuccessfulRevalidation: COUNTER
+      cacheUtilizedMemoryKB: COUNTER
+
+      # nsCompressionStatsGroup
+      compTcpTotalEoi: COUNTER
+      compTcpTotalPush: COUNTER
+      compTcpTotalQuantum: COUNTER
+      compTcpTotalRxBytes: COUNTER
+      compTcpTotalRxPackets: COUNTER
+      compTcpTotalTimer: COUNTER
+      compTcpTotalTxBytes: COUNTER
+      compTcpTotalTxPackets: COUNTER
+      compTotalRequests: COUNTER
+      compTotalRxBytes: COUNTER
+      compTotalRxPackets: COUNTER
+      compTotalTxBytes: COUNTER
+      compTotalTxPackets: COUNTER
+      deCompTcpErrData: COUNTER
+      deCompTcpErrLessData: COUNTER
+      deCompTcpErrMemory: COUNTER
+      deCompTcpErrMoreData: COUNTER
+      deCompTcpErrUnknown: COUNTER
+      deCompTcpRxBytes: COUNTER
+      deCompTcpRxPackets: COUNTER
+      deCompTcpTxBytes: COUNTER
+      deCompTcpTxPackets: COUNTER
+      delCompBaseServed: COUNTER
+      delCompBaseTcpTxBytes: COUNTER
+      delCompDone: COUNTER
+      delCompErrBFileWHdrFailed: COUNTER
+      delCompErrBypassed: COUNTER
+      delCompErrNostoreMiss: COUNTER
+      delCompErrReqinfoAllocfail: COUNTER
+      delCompErrReqinfoToobig: COUNTER
+      delCompErrSessallocFail: COUNTER
+      delCompFirstAccess: COUNTER
+      delCompTcpRxBytes: COUNTER
+      delCompTcpRxPackets: COUNTER
+      delCompTcpTxBytes: COUNTER
+      delCompTcpTxPackets: COUNTER
+      delCompTotalRequests: COUNTER
+
+      # serviceGlobalStatsGroup
+
+      # monServiceMemberEntry
+      monitorFailed: COUNTER
+      monitorFailedCode: COUNTER
+      monitorFailedCon: COUNTER
+      monitorFailedFTP: COUNTER
+      monitorFailedId: COUNTER
+      monitorFailedPort: COUNTER
+      monitorFailedResponse: COUNTER
+      monitorFailedSend: COUNTER
+      monitorFailedStr: COUNTER
+      monitorFailedTimeout: COUNTER
+      monitorMaxClient: COUNTER
+      monitorProbes: COUNTER
+      monitorProbesNoChange: COUNTER
+      monitorResponseTimeoutThreshExceed: COUNTER
+
+
+    map:
+      # vserverEntry
+      #vsvrActiveActiveState: vsvrActiveActiveState
+      vsvrClientConnOpenRate: ClntConnOpenRate
+      vsvrCurClntConnections: vsvrCurClntConns
+      vsvrCurServicesDown: vsvrCurSvcDown
+      vsvrCurServicesOutOfSvc: svrCurSvcOutOfSvc
+      vsvrCurServicesTransToOutOfSvc: svrCurSvcOutOfSvc
+      vsvrCurServicesUnKnown: vsvrCurSvcUnKnwn
+      vsvrCurServicesUp: vsvrCurSvcUp
+      vsvrCurSrvrConnections: vsvrCurSrvrConns
+      vsvrCurSslVpnUsers: vsvrSslVpnUsers
+      vsvrRequestRate: vsvrReqRate
+      #vsvrTicksSinceLastStateChange: vsvrTicksSinceLastStateChange
+      vsvrTotalClients: vsvrTotClients
+      vsvrTotalPktsRecvd: vsvrTotPktsRecvd
+      vsvrTotalPktsSent: vsvrTotPktsSent
+      vsvrTotalRequestBytes: vsvrTotReqBytes
+      vsvrTotalRequests: vsvrTotReqs
+      vsvrTotalResponseBytes: vsvrTotRespBytes
+      vsvrTotalResponses: vsvrTotResps
+      vsvrTotalServers: vsvrTotServers
+      vsvrTotalServicesBound: vsvrTotSvcBound
+      vsvrTotalSynsRecvd: vsvrTotSynsRecvd
+      # serviceEntry
+      svcActiveTransactions: svcActiveTxns
+      svcAvgTransactionTime: svcAvgTxnTime
+      svcCurClntConnections: svcCurClntConns
+      svcEstablishedConn: svcEstablishdConn
+      #svcInetAddressType: svcInetAddressType
+      svcRequestRate: svcReqRate
+      #svcServiceFullName: svcServiceFullName
+      #svcTicksSinceLastStateChange: svcTicksSinceLastStateChange
+      svcTotalClients: svcTotClients
+      svcTotalPktsRecvd: svcTotPktsRecvd
+      svcTotalPktsSent: svcTotPktsSent
+      svcTotalRequestBytes: svcTotReqBytes
+      svcTotalRequests: svcTotReqs
+      svcTotalResponseBytes: svcTotRespBytes
+      svcTotalResponses: svcTotResps
+      svcTotalServers: svcTotServers
+      svcTotalSynsRecvd: svcTotSynsRecvd
+      svctotalJsTransactions: svctotalJsTxns
+
+      # nsIpStatsGroup
+      ipTotAddrLookupFail: ipTotAddrLkupFail
+      ipTotDupFragments: ipTotDupFrags
+      ipTotFixHeaderFail: ipTotFixHeadrFail
+      ipTotFragments: ipTotFrags
+      ipTotInvalidHeaderSz: ipTotInvalidHdrSz
+      ipTotInvalidPacketSize: ipTotInvalidPktSz
+      ipTotOutOfOrderFrag: ipTotOutOfOrdFrag
+      ipTotReassemblyAttempt: ipTotReassAttmpt
+      ipTotSuccReassembly: ipTotSuccReassmbl
+      ipTotTCPfragmentsFwd: ipTotTCPfragsFwd
+      ipTotTruncatedPackets: ipTotTruncatdPkts
+      ipTotUDPfragmentsFwd: ipTotUDPfragsFwd
+      ipTotUnknownDstRcvd: ipTotUnkDstRcvd
+      ipTotUnknownSvcs: ipTotUnkSvcs
+      ipTotUnsuccReassembly: ipTotUnsuccReass
+      ipTotZeroFragmentLen: ipTotZeroFragLen
+      nonIpTotTruncatedPackets: nonIpTotTruncPkts
+
+      # nsIcmpStatsGroup
+      icmpCurRateThreshold: icmpCurRateThresh
+      icmpTotBadChecksum: icmpTotBadChecksm
+      icmpTotBadPMTUIpChecksum: icmpTotBadPMTUCks
+      icmpTotDstIpLookup: icmpTotDstIpLkup
+      icmpTotInvalidBodyLen: icmpTotInvBodyLen
+      icmpTotInvalidNextMTUval: icmpTotInvNextMTU
+      icmpTotInvalidProtocol: icmpTotInvProto
+      icmpTotInvalidTcpSeqno: icmpTotInvTcpSeq
+      icmpTotNonFirstIpFrag: icmpTotNon1stFrg
+      icmpTotPMTUDiscoveryDisabled: icmpTotPMTUDscDis
+      icmpTotPktsDropped: icmpTotPktsDrop
+      icmpTotPortUnreachableRx: icmpTotPortUnrRx
+      icmpTotPortUnreachableTx: icmpTotPortUnrTx
+      icmpTotRxEchoReply: icmpTotRxEchoRply
+      icmpTotThresholdExceeds: icmpTotThreshExc
+      icmpTotTxEchoReply: icmpTotTxEchoRply
+
+      # nsUdpStatsGroup
+      udpCurRateThreshold: udpCurRateThresh
+      udpCurRateThresholdExceeds: udpCurRateThrshEx
+      udpTotUnknownSvcPkts: udpTotUnkSvcPkts
+
+      # nsTcpStatsGroup
+      tcpActiveServerConn: tcpActvSvrCn
+      tcpCurClientConn: tcpCurClntCn
+      tcpCurClientConnClosing: tcpCurClntCnClsg
+      tcpCurClientConnEstablished: tcpCurClntCnEstb
+      tcpCurClientConnOpening: tcpCurClntCnOpng
+      tcpCurPhysicalServers: tcpCurPhySvrs
+      tcpCurServerConn: tcpCurSvrCn
+      tcpCurServerConnClosing: tcpCurSvrCnClsg
+      tcpCurServerConnEstablished: tcpCurSvrCnEstb
+      tcpCurServerConnOpening: tcpCurSvrCnOpng
+      tcpErrBadStateConn: tcpErrBadStateCn
+      tcpErrCltOutOfOrder: tcpErrCltOOR
+      tcpErrCltRetrasmit: tcpErrCltRetr
+      tcpErrCookiePktMssReject: CookiePktMssRj
+      tcpErrCookiePktSeqDrop: CookiePktSeqDrop
+      tcpErrCookiePktSeqReject: CookiePktSeqRj
+      tcpErrCookiePktSigReject: CookiePktSigRj
+      tcpErrDataAfterFin: tcpErrDataAftrFin
+      tcpErrFastRetransmissions: tcpErrFastRetr
+      tcpErrFifthRetransmissions: tcpErrFifthRetr
+      tcpErrFirstRetransmissions: tcpErrFirstRetr
+      tcpErrForthRetransmissions: tcpErrForthRetr
+      tcpErrFullRetrasmit: tcpErrFullRetr
+      tcpErrOutOfWindowPkts: tcpErrOutOfWinPkt
+      tcpErrPartialRetrasmit: tcpErrPartialRetr
+      tcpErrRetransmit: tcpErrRetr
+      tcpErrRetransmitGiveUp: tcpErrRetrGiveUp
+      tcpErrRstInTimewait: tcpErrRstInTWait
+      tcpErrRstOutOfWindow: tcpErrRstOutOfWin
+      tcpErrRstThreshold: tcpErrRstThresh
+      tcpErrSecondRetransmissions: tcpErrSecondRetr
+      tcpErrSeventhRetransmissions: tcpErrSeventhRetr
+      tcpErrSixthRetransmissions: tcpErrSixthRetr
+      tcpErrSvrOutOfOrder: tcpErrSvrOOR
+      tcpErrSvrRetrasmit: tcpErrSvrRetr
+      tcpErrSynDroppedCongestion: SynDroppedCong
+      tcpErrSynGiveUp: SynGiveUp
+      tcpErrSynInEst: SynInEst
+      tcpErrSynInSynRcvd: SynInSynRcvd
+      tcpErrSynRetry: SynRetry
+      tcpErrSynSentBadAck: SynSentBadAck
+      tcpErrThirdRetransmissions: tcpErrThirdRetr
+      tcpSpareConn: tcpSpareCn
+      tcpTotClientConnClosed: tcpTotClntCnClsd
+      tcpTotClientConnOpenRate: tcpTotClntCnOpnRt
+      tcpTotClientConnOpened: tcpTotClntCnOpned
+      tcpTotFinWaitClosed: tcpTotFinWaitClsd
+      tcpTotServerConnClosed: tcpTotSvrCnClsd
+      tcpTotServerConnOpened: tcpTotSvrCnOpned
+      tcpTotZombieActiveHalfCloseCltConnFlushed: ZActvHlfClsCltCnF
+      tcpTotZombieActiveHalfCloseSvrConnFlushed: ZActvHlfClsSvrCnF
+      tcpTotZombieCltConnFlushed: ZCltCnF
+      tcpTotZombieHalfOpenCltConnFlushed: ZHlfOpnCltCnF
+      tcpTotZombieHalfOpenSvrConnFlushed: ZHlfOpnSvrCnF
+      tcpTotZombiePassiveHalfCloseCltConnFlushed: ZPsvHlfClsCltCnF
+      tcpTotZombiePassiveHalfCloseSrvConnFlushed: ZPsvHlfClsSrvCnF
+      tcpTotZombieSvrConnFlushed: ZSvrCnF
+      
+      # nsHttpStatsGroup
+      httpErrIncompleteHeaders: httpErrIncmpHdr
+      httpErrIncompleteRequests: httpErrIncmpReqs
+      httpErrIncompleteResponses: httpErrIncmpResps
+      httpErrLargeContent: httpErrLargeCntnt
+      httpErrNoreuseMultipart: ErrNoreuseMpart
+      httpErrServerBusy: httpErrSvrBusy
+      httpTot10Requests: httpTot10Reqs
+      httpTot10Responses: httpTot10Resps
+      httpTot11Requests: httpTot11Reqs
+      httpTot11Responses: httpTot11Resps
+      httpTotChunkedRequests: httpTotChnkdReqs
+      httpTotChunkedResponses: httpTotChnkdResps
+      httpTotClenRequests: httpTotClenReqs
+      httpTotClenResponses: httpTotClenResps
+      httpTotNoClenChunkResponses: NoClenChunkResps
+      httpTotRequests: httpTotReqs
+      httpTotResponses: httpTotResps
+      httpTotRxRequestBytes: httpTotRxReqBytes
+      httpTotRxResponseBytes: TotRxRespBytes
+      httpTotTxRequestBytes: httpTotTxReqBytes
+      httpTotTxResponseBytes: TotTxRespBytes
+
+      # nsCacheStatsGroup
+      cache64MaxMemoryKB: c64MaxMemKB
+      cacheBytesServed: cBytesServed
+      cacheCompressedBytesServed: cComprBytesServed
+      cacheCurHits: cCurHits
+      cacheCurMisses: cCurMiss
+      cacheErrMemAlloc: cErrMemAlloc
+      cacheLargestResponseReceived: cLargestRespRcvd
+      cacheMaxMemoryActiveKB: cMaxMemActvKB
+      cacheMaxMemoryKB: cMaxMemKB
+      cacheNumCached: cNumCached
+      cacheNumMarker: cNumMarker
+      cachePercent304Hits: cPt304Hit
+      cachePercentByteHit: cPtByteHit
+      cachePercentHit: cPtHit
+      cachePercentOriginBandwidthSaved: cPtOriginBWSaved
+      cachePercentParameterized304Hits: cPtPmtrzd304Hit
+      cachePercentPetHits: cPtPetHits
+      cachePercentStoreAbleMiss: cPtstrblMiss
+      cachePercentSuccessfulRevalidation: cPtScsflReval
+      cacheRecentPercent304Hits: cRcntPt304Hit
+      cacheRecentPercentByteHit: cRcntPtByteHit
+      cacheRecentPercentHit: cRcntPtHit
+      cacheRecentPercentOriginBandwidthSaved: cRcntPctOrgnBWSvd
+      cacheRecentPercentParameterizedHits: cRcntPtPmtrzdHits
+      cacheRecentPercentStoreAbleMiss: cRcntPtstrblMiss
+      cacheRecentPercentSuccessfulRevalidation: cRcntPtScsflReval
+      cacheTot304Hits: cTot304Hit
+      cacheTotExpireAtLastByte: cTotExpAtLastByte
+      cacheTotFlashcacheHits: cTotFlashcacheHit
+      cacheTotFlashcacheMisses: cTotFlashCachMiss
+      cacheTotFullToConditionalRequest: cTotFullToCndnReq
+      cacheTotHits: cTotHits
+      cacheTotInvalidationRequests: cTotInvationReqs
+      cacheTotMisses: cTotMiss
+      cacheTotNon304Hits: cTotNon304Hit
+      cacheTotNonParameterizedInvalidationRequests: NPrmtrInvldtnReqs
+      cacheTotNonStoreAbleMisses: cTotNonstrblMiss
+      cacheTotParameterized304Hits: cTotPmtrzd304Hit
+      cacheTotParameterizedHits: cTotPmtrzdHits
+      cacheTotParameterizedInvalidationRequests: TotPmtrzdInvtnReq
+      cacheTotParameterizedNon304Hits: TotParamdNn304Hit
+      cacheTotParameterizedRequests: cTotPmtrzdReqs
+      cacheTotPetHits: cTotPetHits
+      cacheTotPetRequests: cTotPetReqs
+      cacheTotRequests: cTotReqs
+      cacheTotResponseBytes: cTotRespBytes
+      cacheTotRevalidationMiss: cTotRevalMiss
+      cacheTotStoreAbleMisses: cTotstrblMiss
+      cacheTotSuccessfulRevalidation: cTotScsflReval
+      cacheUtilizedMemoryKB: cUtilizedMemKB
+
+      # nsCompressionStatsGroup
+      compHttpBandwidthSaving: compHttpBWSaving
+      compTcpBandwidthSaving: compTcpBWSaving
+      compTcpTotalEoi: compTcpTotEoi
+      compTcpTotalPush: compTcpTotPush
+      compTcpTotalQuantum: compTcpTotQuantum
+      compTcpTotalRxBytes: compTcpTotRxBytes
+      compTcpTotalRxPackets: compTcpTotRxPkts
+      compTcpTotalTimer: compTcpTotTimer
+      compTcpTotalTxBytes: compTcpTotTxBytes
+      compTcpTotalTxPackets: compTcpTotTxPkts
+      compTotalDataCompressionRatio: TotDataCompRatio
+      compTotalRequests: compTotReqs
+      compTotalRxBytes: compTotRxBytes
+      compTotalRxPackets: compTotRxPkts
+      compTotalTxBytes: compTotTxBytes
+      compTotalTxPackets: compTotTxPkts
+      deCompTcpBandwidthSaving: deCompTcpBWSaving
+      deCompTcpErrLessData: deCompTcpErrLess
+      deCompTcpErrMemory: deCompTcpErrMem
+      deCompTcpErrMoreData: deCompTcpErrMore
+      deCompTcpErrUnknown: deCompTcpErrUnk
+      deCompTcpRxPackets: deCompTcpRxPkts
+      deCompTcpTxPackets: deCompTcpTxPkts
+      delCompBaseTcpTxBytes: delCompBTcpTxByte
+      delCompErrBFileWHdrFailed: delCmpErrBFileWHF
+      delCompErrBypassed: delCompErrBypass
+      delCompErrNostoreMiss: delCompENstreMiss
+      delCompErrReqinfoAllocfail: delCERAllocfail
+      delCompErrReqinfoToobig: delCERToobig
+      delCompErrSessallocFail: delCESessallcFail
+      delCompFirstAccess: delCompFrstAccess
+      delCompTcpRxPackets: delCompTcpRxPkts
+      delCompTcpTxPackets: delCompTcpTxPkts
+      delCompTotalRequests: delCompTotReqs
+
+      # serviceGlobalStatsGroup
+
+      # nsSysHealthEntry
+      sysHealthCounterValue: sysHealthCounter
+
+      # nsSysHealthDiskEntry
+      sysHealthDiskAvail: DiskAvail
+      sysHealthDiskPerusage: DiskPerusage
+      sysHealthDiskSize: DiskSize
+      sysHealthDiskUsed: DiskUsed
+
+      # monServiceMemberEntry
+      drtmLearningProbes: drtmLearningProbe
+      monitorCurFailedCount: monitorCurFailCt
+      monitorFailedResponse: monitorFailedResp
+      monitorFailedTimeout: monitorFailTimeou
+      monitorMaxClient: monitorMaxClnt
+      monitorProbes: monitorProbe
+      monitorProbesNoChange: monitorProbeNoChg
+      monitorResponseTimeoutThreshExceed: RspTimeThrehExcd
+
+# vim: set ts=2 sw=2 expandtab:

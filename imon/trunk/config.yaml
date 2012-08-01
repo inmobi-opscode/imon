@@ -1,0 +1,7 @@
+package: imon
+version: 0.1.0
+arch: all
+maintainer: Rengith Jerome <rengith.j@inmobi.com>
+description: event collection, processing and alerting/reporting platform
+section: ops
+predepends: libyaml-syck-perl, libio-socket-multicast-perl, libthreads-perl, libthreads-shared-perl, libthread-queue-perl, libtime-hires-perl, libclone-perl, librrds-perl, lwes, lwes-perl0, libredis-perl, libmime-lite-perl, libdata-validate-ip-perl, libmath-calculus-expression-perl, liblinux-inotify2-perl

@@ -1,0 +1,186 @@
+# imon-sample.yaml:  imon sample configuration file
+#
+# transport:
+#
+# Transports modules are used by collectors and processors to send and receive
+# data.
+# collector-module -> t1 -> processor-module -> t2 -> sender-module -> [..]
+#
+# Transport Options:
+#
+# - InMemory: In memory queue. Used as an interface between modules
+# - ImonConnector: LWES module for sending/receiving events over network
+# - LwesEmitter: LWES emitter module. Used to sending aggregated events to
+#   another iMon instance over UDP Unicast or Multicast
+# - REDIS: Writes to a redis instance
+
+transport:
+  # collector to processor transport(s)
+  # For InMemory, Queue size(number of events in the q) can be set by setting the threshold parameter (threshold: <max number of events>)
+  - name: tAgg
+    module: InMemory
+  - name: tTag
+    module: InMemory
+  # processor to sender transport(s)
+  - name: tRRD
+    module: InMemory
+  - name: tSyslog
+    module: InMemory
+  - name: tEmail
+    module: InMemory
+  # transport to send event over network using LWES
+  - name: tConnector
+    module: ImonConnector
+    addr: 224.1.1.11
+    port: 9009
+    event_type: "Test::Stats"
+
+# collector:
+#
+# Collectors collect events from the network. You can have as many colectors as
+# you need but its cleaner to have one imon instance have one collector.
+
+collector:
+  - name: Lwes
+    module: Lwes
+    ip: 224.1.1.11                # Set to match emitter address settings
+    port: 9191                    # Set to match emitter port settings
+    transport:
+      - tAgg
+      - tTag
+    env: test
+    event_type:
+      - 'MonDemand::StatsMsg'
+    
+# processor:
+#
+# Procesors pick up events from transport(s). The processing rules (tagiing,
+# aggregation, etc) and applied and the results are pushed to another
+# transport(s)
+
+processor:
+  - name: Aggregator
+    module: Aggregator
+    transport:
+      in:
+        - tAgg
+      out:
+        - tRRD
+        - tConnector
+    interval: 60                # Aggregation interval. Default is 60s
+    default_pivot: Hostname     # To get per host stats
+    pivot:
+      hoststats:
+        - prog_id               # Also get by prog_id stats
+    rules:                      # Rules can be many. Each event key can have a rule
+      cpu:
+        cf:
+          - Avg
+      disk:
+        cf:
+          - Avg
+          - Rate: 10 # Rate of change if during Aggregation interval with threshold 10
+      nw:
+        cf:
+          - Avg
+  
+  - name: Tagger
+    module: Tagger
+    transport:
+      in:
+        - tTag
+      out:
+        - tSyslog
+        - tEmail
+    rules:
+      MyApp:
+        #pivot: device # pivot on a given key (defualts to Hostname)
+        tags:
+          warn-host:
+            Tags:
+              - warn-cpu
+              - warn-disk
+              - warn-nw
+          crit-host:
+            AND:
+              - cpu: '>90'
+              - disk: '>90'
+              - nw: '>90'
+          warn-cpu:
+            - cpu: '>70'
+          warn-disk:
+            - disk: '>70'
+          warn-nw:
+            - nw: '>70'
+          crit-cpu:
+            - cpu: '>90'
+          crit-disk:
+            - disk: '>90'
+          crit-nw:
+            - nw: '>90'
+          disk-usage-rate:
+            Rate:
+              disk: '>=10' # rate of change during the interval (value should be in range format)
+              interval: 60 # default is 60
+          # Expr check against range
+          #expr-sample-tag:
+          #  Expr:
+          #    '(x/(x+y))*100': '>50' # expr as the key and range as the val
+          #    ds: [ x , y ]
+          # Rate with arithematic expression  
+          #rate-with-exp:
+          #  Rate:
+          #    expr:
+          #      '(x+y)/2': '>10'   # expr as the key and range as the val
+          #      ds: [ x , y ]      # all the ds involved in the expr
+          #    interval: 120   
+        comments: # comments per tag (%% for tag returned value, %{metric_name} for metric_name value)
+          warn-host: "Warning: resources reached 70% capacity[ disk: %{disk}%, cpu: %{cpu}%, nw: %{nw}% ]"
+          crit-host: "Critical: resources reached 90% capacity[ disk: %{disk}%, cpu: %{cpu}%, nw: %{nw}% ]"
+          disk-usage-rate: "disk usage has increased by minimum 10 [ rate: %%, size: %{disk}% ]"
+          
+sender:
+  - name: RRD
+    module: RRD
+    transport: 
+      - tRRD
+    datadir: '/var/lib/imon/rrd'
+    step: 60
+    hb: 600
+    rras:
+      - 'RRA:AVERAGE:0.5:1:44640'
+    map:
+
+  - name: Log
+    module: Syslog
+    transport:
+      - tSyslog
+    Sources:
+      MyApp:
+        - '/warn-.*/' # list of tags matches the perl regex
+        - crit-host
+        - disk-usage-rate
+
+  - name: Alert
+    module: Email
+    transport:
+      - tEmail
+    # sleep configurations
+    # defaults to using FileWatcher module with /var/lib/imon/sleep as basedir
+    #sleep:
+    #  module: FileWatcher
+    #  basedir: /var/lib/imon/sleep
+    Sources:
+      MyApp:
+        '/warn-.*/': # tags matches the perl regex ( quote is a must )
+          - contact_group1
+        crit-host:
+          - contact_group1
+        disk-usage-rate:
+          - contact_group1
+
+    Contacts:
+      contact_group1: 
+        - 'rengith.j@inmobi.com'
+      
+# vim: set sw=2 ts=4 expandtab:

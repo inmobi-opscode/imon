@@ -1,0 +1,11 @@
+# $Id: config.yaml 6324 2012-03-28 15:41:50Z shanker.balan $
+
+package: imon-json
+version: 0.1.0
+arch: all
+maintainer: Platform-Pe <platform-pe@inmobi.com>
+description: JSON Collector
+section: ops
+depends: imon, imon-utils-poe, libhash-flatten-perl, libjson-perl
+
+# vim: set ts=2 sw=2 expandtab:

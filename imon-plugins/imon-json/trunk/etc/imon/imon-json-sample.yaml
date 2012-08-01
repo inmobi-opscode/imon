@@ -1,0 +1,33 @@
+# $Id: imon-json-sample.yaml 6336 2012-03-29 04:25:41Z shanker.balan $
+#
+# Sample IMON config for JSON collector
+
+transport:
+  - name: tDump
+    module: InMemory
+
+collector:
+  - name: JsonStats
+    module: JSON
+    source: AdserverStats
+    event_type: phoenixStats
+    transport:
+      - tDump
+    env: adserver_stats
+    interval: 60
+    ssl: 0  # 1 to enable
+    port: 8080
+    options:
+      timeout: 15
+      agent: foobar
+    url: /phoenix/inspectors/dag-stats.jsp
+    hosts:
+      - web1001.ads.ua2.inmobi.com
+
+sender:
+  - name: Dump
+    module: Dump
+    transport:
+      - tDump
+
+# vim: set sw=2 ts=4 expandtab:

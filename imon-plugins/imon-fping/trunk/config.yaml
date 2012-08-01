@@ -1,0 +1,11 @@
+# $Id: config.yaml 5757 2012-03-07 17:40:55Z shanker.balan $
+
+package: imon-fping
+version: 0.1.0
+arch: all
+maintainer: Platform-Pe <platform-pe@inmobi.com>
+description: IMon Fping Collector
+section: ops
+depends: imon, imon-utils-poe, fping
+
+# vim: set ts=2 sw=2 expandtab:

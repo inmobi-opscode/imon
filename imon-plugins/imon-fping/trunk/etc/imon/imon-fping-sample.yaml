@@ -1,0 +1,97 @@
+# $Id: imon-fping-sample.yaml 5066 2012-02-04 13:16:37Z twikiuser $
+
+transport:
+  - name: tDump
+    module: InMemory
+  - name: tIRC
+    module: InMemory
+  - name: tAgg
+    module: InMemory
+  - name: tRRD
+    module: InMemory
+  - name: tLwes
+    module: LwesEmitter
+    addr: 224.1.1.11
+    port: 10006
+    event_name: 'FPing'
+  - name: tTag
+    module: InMemory
+
+collector:
+  - name: FPing
+    module: FPing
+    source: FPING
+    transport:
+      #- tDump
+      - tAgg
+      - tTag
+    env: ping_stats
+    fping: /usr/bin/fping
+    tries: 4
+    interval: 60
+    devices:
+      - build.corp.inmobi.com
+      - irc.corp.inmobi.com
+    event_type: FPing
+
+processor:
+  - name: Aggregator
+    module: Aggregator
+    transport:
+      in:
+        - tAgg
+      out:
+        - tRRD
+    interval: 60
+    default_pivot: device
+    rules:                
+      avgRespTime:
+        cf:
+          - Avg
+      packetLoss:
+        cf:
+          - Avg
+
+  - name: Tagger
+    module: Tagger
+    transport:
+      in:
+        - tTag
+      out:
+        #- tSyslog
+        #- tEmail
+        - tLwes
+    rules:
+      FPING:
+        pivot: device
+        tags:
+          crit_loss:
+            - packetLoss: '>50' 
+          warn_loss:
+            - packetLoss: '10-50'
+          warn_resp_time:
+            - avgRespTime: '350-450'
+          crit_resp_time:
+            - avgRespTime: '>450'
+        comments:
+          crit_loss: "packetLoss: %{packetLoss}%"
+          warn_loss: "packetLoss: %{packetLoss}%"
+          warn_resp_time: "avgRespTime: %{avgRespTime} ms"
+          crit_resp_time: "avgRespTime: %{avgRespTime} ms"
+    
+sender:
+  - name: Dump
+    module: Dump
+    transport:
+      - tDump
+  - name: RRD
+    module: RRD
+    transport:
+      - tRRD
+    datadir: '/var/lib/imon/rrd'
+    step: 60
+    hb: 600
+    rras:
+      - 'RRA:AVERAGE:0.5:1:44640'
+
+# vim: set sw=2 ts=2 expandtab:

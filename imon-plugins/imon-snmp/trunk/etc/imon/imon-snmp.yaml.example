@@ -1,0 +1,172 @@
+transport:
+  - name: tAgg
+    module: InMemory
+  - name: tTag
+    module: InMemory
+  - name: tSysLog
+    module: InMemory
+  - name: tEmail
+    module: InMemory
+  - name: tRRD
+    module: InMemory
+
+collector:
+  - name: SNMP
+    module: SNMP::Info
+    default:
+      snmp_options:
+        Community: WygDubacs7
+        Port: 161
+        Version: 2
+    interval: 60
+    event_type: SNMP::Info
+    devices:
+      proxy2.corp.inmobi.com:
+        snmp_options:
+          Community: WygDubacs7
+      irc.corp.inmobi.com:
+    transport:
+      - tTag
+      - tAgg
+    env: snmp_info_if_mib
+
+processor:
+  - name: Aggregator
+    module: Aggregator
+    transport:
+      in:
+        - tAgg
+      out:
+        - tRRD
+    interval: 60
+    default_pivot: hostname
+    pivot:
+      by_index:
+      - hostname
+      - i_index 
+      by_description:
+      - hostname
+      - i_description
+    rules:
+      i_octet_out:
+        cf:
+          - Last
+      i_octet_in:
+        cf:
+          - Last
+      #i_up_admin:
+      i_bad_proto_in:
+        cf:
+          - Last
+      i_octet_in64:
+        cf:
+          - Last
+      i_errors_in:
+        cf:
+          - Last
+      i_octet_out:
+        cf:
+          - Last
+      i_pkts_ucast_out:
+        cf:
+          - Last
+      i_discards_in:
+        cf:
+          - Last
+      #i_speed_high:
+      i_pkts_bcast_in64:
+        cf:
+          - Last
+      i_pkts_multi_in64:
+        cf:
+          - Last
+      i_lastchange:
+        cf:
+          - Last
+      i_pkts_bcast_in:
+        cf:
+          - Last
+      #i_alias:
+      i_pkts_bcast_out64:
+        cf:
+          - Last
+      #i_index:
+      #i_up:
+      #i_mac:
+      #i_type:
+      i_pkts_multi_out64:
+        cf:
+          - Last
+      i_pkts_nucast_out:
+        cf:
+          - Last
+      i_pkts_multi_in:
+        cf:
+          - Last
+      #i_description:
+      i_qlen_out:
+        cf:
+          - Last
+      i_pkts_ucast_in64:
+        cf:
+          - Last
+      #i_speed:
+      #i_mtu:
+      #i_name:
+      i_discards_out:
+        cf:
+          - Last
+      #i_specific:
+      i_pkts_ucast_in:
+        cf:
+          - Last
+      i_pkts_nucast_in:
+        cf:
+          - Last
+      i_pkts_ucast_out64:
+        cf:
+          - Last
+      i_octet_out64:
+        cf:
+          - Last
+      i_pkts_multi_out:
+        cf:
+          - Last
+      i_octet_in:
+        cf:
+          - Last
+      i_errors_out:
+        cf:
+          - Last
+      i_pkts_bcast_out:
+        cf:
+          - Last
+
+sender:
+  #- name: Dump
+    #module: Dump
+    #transport:
+      #- tAgg
+  - name: RRD
+    module: RRD
+    transport:
+      - tRRD
+    datadir: '/tmp/iagg'
+    step: 60
+    hb: 600
+    rras:
+      - 'RRA:AVERAGE:0.5:1:44640'
+    ds_type:
+      i_octet_out: DERIVE
+      i_octet_in: DERIVE
+    map:
+      i_pkts_bcast_in64: pkts_bcast_in64
+      i_pkts_bcast_out64: pkts_bcast_out64
+      i_pkts_multi_in64: pkts_multi_in64
+      i_pkts_multi_out64: pkts_multi_out64
+      i_pkts_nucast_in: pkts_nucast_in
+      i_pkts_nucast_out: pkts_nucast_out
+      i_pkts_ucast_in64: pkts_ucast_in64
+      i_pkts_ucast_out64: pkts_ucast_out64
+
+# vim: set ts=2 sw=2 expandtab:

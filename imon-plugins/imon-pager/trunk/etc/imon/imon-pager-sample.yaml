@@ -1,0 +1,28 @@
+#
+#$Id: imon-pager-sample.yaml 7342 2012-04-20 11:58:47Z rengith.j $
+transport:
+  - name: tConnector
+    module: ImonConnector
+    addr: 224.1.1.11
+    port: 10006
+    event_type: "Pager::Event"
+
+sender:
+  - name: Pager
+    module: PagerDuty
+    transport:
+      - tConnector
+    # tag_list: list of tags that are allowed/accepted by pagerduty, can specify tag_names or regex(as below)
+    tag_list:
+      - '/crit/'
+    # for details on pager settings see http://www.pagerduty.com/docs/integration-api/integration-api-documentation 
+    pager_settings:
+      pagerduty_url: 'https://events.pagerduty.com/generic/2010-04-15/create_event.json'
+      service_key: # servicekey per Source
+        FPing: '16eeb62065b1012f1df422000a9040cf'
+        'Cisco::Stats': 'ac79b2d06b3f012f2d0f1231390e3932'
+      event_type: 'trigger' # defaults to 'trigger'
+      timeout: 60 # defaults to 120 sec
+      retry: 2 # defaults to 3
+
+# vim: set sw=2 ts=4 expandtab:

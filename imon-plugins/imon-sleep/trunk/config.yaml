@@ -1,0 +1,7 @@
+package: imon-sleep
+version: 0.1.0
+arch: all
+maintainer: Rengith Jerome <rengith.j@inmobi.com>
+description: CLI for querying/updating iMon alerts sleep information
+section: ops
+predepends: imon
