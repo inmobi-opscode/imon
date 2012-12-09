@@ -1,0 +1,51 @@
+#
+# $Id$
+
+transport:
+  - name: tAgg
+    module: InMemory
+  - name: tGraphite
+    module: InMemory
+
+collector:
+  - name: Lwes
+    module: Lwes
+    ip: 224.1.1.11
+    port: 9191
+    transport:
+      - tAgg
+    env: SystemStats
+    event_type:
+      - 'CPU::Stats'
+
+processor:
+  - name: Aggregator
+    module: Aggregator
+    transport:
+      in:
+        - tAgg
+      out:
+        - tGraphite
+    interval: 60
+    default_pivot: Hostname
+    pivot:
+      hoststats:
+        - Source
+    rules:
+      cpu:
+        cf:
+          - Avg
+sender:
+  - name: Graphite
+    module: Graphite
+    transport:
+      - tGraphite
+    carbon_server: 127.0.0.1 # defaults to 127.0.0.1
+    carbon_port: 2003        # defaults 2003
+    # optional namespace (enable below) to override the namespace ( Default is <env>.<pivot_label>.<pivot_value>.<default_pivot> )
+    #namespace:
+    #  - env
+    #  - Hostname
+
+# vim: set sw=2 ts=4 expandtab:
+
